@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: data-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:13
+        env:
+        - name: POSTGRES_PASSWORD
+          value: {{ .Values.secrets.dbPass }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: data-ns
+spec:
+  ports:
+  - port: 5432
+  selector:
+    app: postgres
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: data-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:alpine
+        # If your app.py requires a password, use this:
+        command: ["redis-server", "--requirepass", "securepass"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: data-ns
+spec:
+  ports:
+  - port: 6379
+  selector:
+    app: redis

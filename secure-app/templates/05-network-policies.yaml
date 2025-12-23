@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-policy
+  namespace: backend-ns
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: frontend-ns
+    ports:
+    - port: 5000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: data-allow-backend
+  namespace: data-ns
+spec:
+  podSelector: {} # This applies to ALL pods in data-ns (Postgres and Redis)
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: backend-ns
+    ports:
+    - protocol: TCP
+      port: 5432 # Postgres
+    - protocol: TCP
+      port: 6379 # Redis

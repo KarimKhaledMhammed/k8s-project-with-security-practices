@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: backend-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: alpine
+        command: ['sh', '-c', 'until nc -z postgres.data-ns.svc.cluster.local 5432; do echo waiting for postgres; sleep 2; done;']
+      - name: wait-for-redis
+        image: alpine
+        command: ['sh', '-c', 'until nc -z redis.data-ns.svc.cluster.local 6379; do echo waiting for redis; sleep 2; done;']
+      containers:
+      - name: backend
+        image: {{ .Values.images.backend }}
+        # ... rest of your backend container config
+      imagePullSecrets:
+      - name: {{ .Values.images.pullSecret }}
+      containers:
+      - name: backend
+        image: {{ .Values.images.backend }}
+        env:
+        - name: DB_PASS
+          value: {{ .Values.secrets.dbPass }}
+        - name: REDIS_PASS
+          value: {{ .Values.secrets.redisPass }}
+      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: backend-ns
+spec:
+  ports:
+  - port: 5000
+  selector:
+    app: backend

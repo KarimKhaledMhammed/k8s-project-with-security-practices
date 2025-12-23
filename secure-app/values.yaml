@@ -1,0 +1,12 @@
+# secure-app/values.yaml
+global:
+  domain: myapp.local
+
+images:
+  backend: karimkhaled02/k8s_front_back:backend-v1
+  frontend: karimkhaled02/k8s_front_back:frontend-v1
+  pullSecret: my-docker-creds
+
+secrets:
+  dbPass: securepass
+  redisPass: securepass
