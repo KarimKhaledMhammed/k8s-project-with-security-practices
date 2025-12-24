@@ -34,3 +34,17 @@ spec:
       port: 5432 # Postgres
     - protocol: TCP
       port: 6379 # Redis
+---
+apiVersion: policy.sigstore.dev/v1alpha1
+kind: ClusterImagePolicy
+metadata:
+  name: {{ include "secure-app.fullname" . }}-verify-policy
+spec:
+  images:
+    # This matches the images defined in your values.yaml
+    - glob: "index.docker.io/{{ .Values.images.backend }}*"
+    - glob: "index.docker.io/{{ .Values.images.frontend }}*"
+  authorities:
+    - key:
+        data: |
+{{ .Values.security.publicKey | indent 10 }}

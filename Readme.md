@@ -87,6 +87,28 @@ COSIGN_OFFLINE=1 cosign verify --key cosign.pub karimkhaled02/k8s_front_back:fro
 
 Tip: Enforce verification in admission controllers (e.g., Kyverno, OPA/Gatekeeper) to block unsigned images at admission time.
 
+### Enable Sigstore image verification
+
+If you're using a `ClusterImagePolicy` (Sigstore) you may need to label namespaces so the policy applies. Example:
+
+```bash
+kubectl label namespace frontend-ns policy.sigstore.dev/include=true
+kubectl label namespace backend-ns policy.sigstore.dev/include=true
+```
+
+The chart includes a sample public key in `secure-app/values.yaml` (under `security.publicKey`) used by the `ClusterImagePolicy` template.
+
+### TLS: generate and install a cert (optional)
+
+For local testing you can generate a self-signed certificate and create a TLS secret used by the ingress:
+
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=myapp.local/O=DevSecOps"
+kubectl create secret tls myapp-tls-secret --key tls.key --cert tls.crt -n frontend-ns
+```
+
+Alternatively, paste your cert/key into `secure-app/values.yaml` under `secrets.tlsCrt` and `secrets.tlsKey` before installing the chart.
+
 ---
 
 ## 🧪 Testing & Validation
@@ -118,9 +140,8 @@ kubectl exec -it $(kubectl get pod -l app=postgres -n data-ns -o name) -n data-n
 **Cosign verification (example):**
 ![Cosign Version](/assets/cosign_verfication.png)
 
-**Frontend Login Page (example):**
-![App Login](/assets/app-login.png)
-
+**Frontend Login Page (HTTPS)(example):**
+![App Login](/assets/https_page.png)
 
 ---
 

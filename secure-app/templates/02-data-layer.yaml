@@ -1,9 +1,26 @@
+# secure-app/templates/02-postgres-statefulset.yaml
+
+# 1. Headless Service (clusterIP: None)
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-headless
+  namespace: data-ns
+spec:
+  clusterIP: None
+  ports:
+    - port: 5432
+  selector:
+    app: postgres
+---
+# 2. StatefulSet
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: postgres
   namespace: data-ns
 spec:
+  serviceName: "postgres-headless"
   replicas: 1
   selector:
     matchLabels:
@@ -15,28 +32,52 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: postgres:13
+        image: postgres:15
+        ports:
+        - containerPort: 5432
         env:
         - name: POSTGRES_PASSWORD
-          value: {{ .Values.secrets.dbPass }}
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: db-pass
+        volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+          subPath: postgres
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ .Values.persistence.storageClass | quote }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.size | quote }}
 ---
+# secure-app/templates/02-redis-statefulset.yaml
+
+# 1. Headless Service
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
+  name: redis-headless
   namespace: data-ns
 spec:
+  clusterIP: None
   ports:
-  - port: 5432
+    - port: 6379
   selector:
-    app: postgres
+    app: redis
 ---
+# 2. StatefulSet
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: redis
   namespace: data-ns
 spec:
+  serviceName: "redis-headless"
   replicas: 1
   selector:
     matchLabels:
@@ -48,17 +89,25 @@ spec:
     spec:
       containers:
       - name: redis
-        image: redis:alpine
-        # If your app.py requires a password, use this:
-        command: ["redis-server", "--requirepass", "securepass"]
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis
-  namespace: data-ns
-spec:
-  ports:
-  - port: 6379
-  selector:
-    app: redis
+        image: redis:7-alpine
+        command: ["redis-server", "--requirepass", "$(REDIS_PASS)"]
+        ports:
+        - containerPort: 6379
+        env:
+        - name: REDIS_PASS
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: redis-pass
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ .Values.persistence.storageClass | quote }}
+      resources:
+        requests:
+          storage: "500Mi"

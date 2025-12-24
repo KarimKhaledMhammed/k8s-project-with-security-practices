@@ -13,28 +13,46 @@ spec:
       labels:
         app: backend
     spec:
+      imagePullSecrets:
+      - name: {{ .Values.images.pullSecret | quote }}
+      
+      # 1. Init Containers updated to use the stable Headless DNS
       initContainers:
       - name: wait-for-postgres
         image: alpine
-        command: ['sh', '-c', 'until nc -z postgres.data-ns.svc.cluster.local 5432; do echo waiting for postgres; sleep 2; done;']
+        command: ['sh', '-c', 'until nc -z {{ .Values.database.host }} {{ .Values.database.port }}; do echo waiting for postgres; sleep 2; done;']
       - name: wait-for-redis
         image: alpine
-        command: ['sh', '-c', 'until nc -z redis.data-ns.svc.cluster.local 6379; do echo waiting for redis; sleep 2; done;']
+        command: ['sh', '-c', 'until nc -z {{ .Values.redis.host }} {{ .Values.redis.port }}; do echo waiting for redis; sleep 2; done;']
+
+      # 2. Main Application Container
       containers:
       - name: backend
         image: {{ .Values.images.backend }}
-        # ... rest of your backend container config
-      imagePullSecrets:
-      - name: {{ .Values.images.pullSecret }}
-      containers:
-      - name: backend
-        image: {{ .Values.images.backend }}
+        ports:
+        - containerPort: 5000
         env:
+        # Hostnames from values.yaml (Headless DNS)
+        - name: DB_HOST
+          value: {{ .Values.database.host | quote }}
+        - name: DB_PORT
+          value: {{ .Values.database.port | quote }}
+        - name: REDIS_HOST
+          value: {{ .Values.redis.host | quote }}
+        - name: REDIS_PORT
+          value: {{ .Values.redis.port | quote }}
+        
+        # Credentials from Secrets
         - name: DB_PASS
-          value: {{ .Values.secrets.dbPass }}
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: db-pass
         - name: REDIS_PASS
-          value: {{ .Values.secrets.redisPass }}
-      
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: redis-pass
 ---
 apiVersion: v1
 kind: Service
@@ -44,5 +62,6 @@ metadata:
 spec:
   ports:
   - port: 5000
+    targetPort: 5000
   selector:
     app: backend

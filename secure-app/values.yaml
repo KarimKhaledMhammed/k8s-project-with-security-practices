@@ -1,4 +1,70 @@
 # secure-app/values.yaml
+secrets:
+  dbPass: "securepass"
+  redisPass: "securepass"
+  # Paste the contents of your tls.crt and tls.key files here
+  tlsCrt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDNTCCAh2gAwIBAgIUE5HA1XgeR6UahJcvT1PrHI1Eeu4wDQYJKoZIhvcNAQEL
+      BQAwKjEUMBIGA1UEAwwLbXlhcHAubG9jYWwxEjAQBgNVBAoMCURldlNlY09wczAe
+      Fw0yNTEyMjQwMTQ1MzdaFw0yNjEyMjQwMTQ1MzdaMCoxFDASBgNVBAMMC215YXBw
+      LmxvY2FsMRIwEAYDVQQKDAlEZXZTZWNPcHMwggEiMA0GCSqGSIb3DQEBAQUAA4IB
+      DwAwggEKAoIBAQCVmBUNS4oPWKJY6Yg1zSMiEwHIgMybr/94zRAIuzswtHuhdp1Q
+      5V62AQtA6sjo0FZxS/D4G7VH4aArMNZwOpgSbQZb5IHAiayAGcLGVDWM35wcAGtW
+      Hgr2rEleSET0qrpaA3z+Q83dCrUZmwgZMnxRFmrl3V8oehn3h4hgCRag7PYN3FAZ
+      ji1uBBkQNY0FuVwKyz/OlLm+RcZjP1OBG8C+hz8PRmFO+0DN7QcBKbBneRLfbfuJ
+      wKSaZ3DW3gOjEp8JiCKLQJSfvp7ZIIxkPVTKt9iMyYfi3l7AfAqmm+8U8B3hw9gj
+      9ZPt8U4pbcXhokqbVPoMdY1sI7RND/7ji04lAgMBAAGjUzBRMB0GA1UdDgQWBBTz
+      Z3Mrjch3DepvEKPXr9v+Yd0HhzAfBgNVHSMEGDAWgBTzZ3Mrjch3DepvEKPXr9v+
+      Yd0HhzAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQBiWgXT4U+M
+      eZ5mr8ZS1hs10c0bT9dzbXi6wbguNcrzeY5UBNaKEZOPONAszsJSNau+POWCX0xw
+      tvLixfl+n5nRRYrKf8pbuRArPklHXic5TPE27GVlYbQp/873RO9UpLWoKsmC5qLm
+      VmtzHfXUtTLdUv2x7DIHQkX53JVxf7Kp1O9VbEzZ95GYZg3K9XRJLMZ+Ws1jVO3K
+      EKD4XEeRwwP9ZJGbClnxCFqG9XaC6tQTqCcxplyczRDTCzyb4BOoGW+H+goDHYJg
+      tp1yInYa0iOfhB+UJsybQAe/9ZNTPJtBZNTFlISAnB3CAen4ZZU3ZI9PHjRRgu5f
+      HsVdInvNXPWX
+      -----END CERTIFICATE-----
+  tlsKey: |
+      -----BEGIN PRIVATE KEY-----
+      MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCVmBUNS4oPWKJY
+      6Yg1zSMiEwHIgMybr/94zRAIuzswtHuhdp1Q5V62AQtA6sjo0FZxS/D4G7VH4aAr
+      MNZwOpgSbQZb5IHAiayAGcLGVDWM35wcAGtWHgr2rEleSET0qrpaA3z+Q83dCrUZ
+      mwgZMnxRFmrl3V8oehn3h4hgCRag7PYN3FAZji1uBBkQNY0FuVwKyz/OlLm+RcZj
+      P1OBG8C+hz8PRmFO+0DN7QcBKbBneRLfbfuJwKSaZ3DW3gOjEp8JiCKLQJSfvp7Z
+      IIxkPVTKt9iMyYfi3l7AfAqmm+8U8B3hw9gj9ZPt8U4pbcXhokqbVPoMdY1sI7RN
+      D/7ji04lAgMBAAECggEAFCk1eR+7oRrYcnQy29FkUUTPgja9nKPpId49MXgOX5+L
+      Y/To+cyX6Z6VZi/eWOYvKEDMXpvZYDEr1XZVCDYVZbJU35CZ3hmP6onOQs15lB1U
+      3D9AOBB/eMQ6dR73UCQsTlJXB6uatJYrVyKaQk8YCxOi34zotLtUAZS+D/dZmeFw
+      /dvI/a6UqDhJkeLT0WZKok32hq1Mz43HQoX1XhoPxYCuHnxCy1V4Upk22t6Y2YRS
+      i3gPat5nG828Mj05AWRO3+5/7waU+OSF3IbkhAmmFZOBkt48RvFrK8xVETo6n4Ei
+      Bgo/UhxwvNXiJbmlqJkBjqYm6GLM+uisC8VFGSqtAQKBgQDFOOLmnZQb+FZ1FzBP
+      KjcQM92H2mJfaCyIvuaZ+E/f6yoYsM6zYFcKPDrkCaX0pbMTsSJqopedeHz5AXUt
+      Wy8100XMWbT9yISd2vsLuqUgq88shh/lQ8roQzhEKf8kLPtRUMorAaVFW3kWMt0n
+      jiQ9QZzNOetgYP1xlayXeGPSgQKBgQDCLWVhnbn5nJrwAcMYM2ny5lhenx6dfwVv
+      ix/RbggnYo9gGZ6rSrrjdLX+J6h+PEEW6QGWhyRVSBAtFcGMr/1BwgmXFnHlJDGB
+      FeQzYQdWtNqyiVs+gYVz/YwYD2SGVoWz/1o9dpsPiep1gdpT6t7Pb7oDkBLeJLV0
+      6wdEoBIhpQKBgQC9xWgnidcbNtFSZ9a3RiKnt5BhiZSAw0ee6ToRS6roBmuCSJcM
+      aRY3pg7woAwNJWfz+czpGLyU7HwsSefLleMOgtW1tVf/nvNkxXItLhJ4Jnn6GLEW
+      NS5IYW4BwPtdft7wtrFhwnqaC1OvNZAx4IckXj8YBrRjD9Cve9sQAOrkgQKBgFaN
+      HY9xWqAkaftpDakP4b3fZqxmiKLzJ10cykXzobbMe9P+F3eKi9su/qAW1UfPW8P2
+      gDq0akGJKYyvEeK/30ccUmICIypcA6TiOSGdskO3wXOrPfyShwW4kmV3Fvu6PUaK
+      H5Md9ufqNZPDGaomGsKjrmpAIejau/cte8PfBbXxAoGBALpKZWSSjrBZNMwagp1I
+      X8JWk3NvQuavF5EHgREUQWsCzwkcEQji3KYyffLRdwvraeKNg5CcDY8b+FnZwGeQ
+      9YDXzgBtlw8be9aDnv2AisZke/Ux8IPoNSJoneopvBwsT6kVL+1dx1nWHfksHtI8
+      tR1WY52jtRaK+d3Ng6ExlT5M
+      -----END PRIVATE KEY-----
+ingress:
+  tls:
+    enabled: true
+    secretName: myapp-tls-secret
+
+security:
+  publicKey: |
+    -----BEGIN PUBLIC KEY-----
+    MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEQO01xMNzlOGPJ+VuTR8pJ/NqPA+P
+    H2wgT2B5e4FilFe6cOMJMSM+/p7+34k0s8Fo4n5deYcR8RnY08nGpHjDrQ==
+    -----END PUBLIC KEY-----
+
 global:
   domain: myapp.local
 
@@ -7,6 +73,13 @@ images:
   frontend: karimkhaled02/k8s_front_back:frontend-v1
   pullSecret: my-docker-creds
 
-secrets:
-  dbPass: securepass
-  redisPass: securepass
+persistence:
+  storageClass: "standard"
+  size: "1Gi"
+database:
+  host: "postgres-0.postgres-headless.data-ns.svc.cluster.local"
+  port: 5432
+
+redis:
+  host: "redis-0.redis-headless.data-ns.svc.cluster.local"
+  port: 6379
