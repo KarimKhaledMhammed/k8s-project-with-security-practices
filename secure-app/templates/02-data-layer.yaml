@@ -1,6 +1,3 @@
-# secure-app/templates/02-postgres-statefulset.yaml
-
-# 1. Headless Service (clusterIP: None)
 apiVersion: v1
 kind: Service
 metadata:
@@ -13,7 +10,6 @@ spec:
   selector:
     app: postgres
 ---
-# 2. StatefulSet
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -55,9 +51,6 @@ spec:
         requests:
           storage: {{ .Values.persistence.size | quote }}
 ---
-# secure-app/templates/02-redis-statefulset.yaml
-
-# 1. Headless Service
 apiVersion: v1
 kind: Service
 metadata:
@@ -70,7 +63,6 @@ spec:
   selector:
     app: redis
 ---
-# 2. StatefulSet
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
