@@ -178,29 +178,22 @@ kubectl exec -it $(kubectl get pod -l app=postgres -n data-ns -o name) -n data-n
 
 ## 🖼️ Screenshots
 **Cosign version:**
-![Cosign Version](/assets/cosign-version.svg)
+![Cosign Version](/assets/cosign-version.png)
 
 **Cosign verification (example):**
-![Cosign Version](/assets/cosign-version.svg)
+![Cosign Version](/assets/cosign_verfication.png)
 
 **Frontend Login Page (example):**
-![App Login](/assets/app-login.svg)
+![App Login](/assets/app-login.png)
 
 **Vault (examples):**
 ![Vault Login](/assets/vault-login.png)
+
 ![Vault Dashboard](/assets/vault-dashboard.png)
+
 ![Vault Backend Role](/assets/vault-backend-role.png)
 
-_Note: Replace the placeholder PNGs in `/assets/` with your real screenshots (PNG/JPG) if you prefer higher-fidelity images._
 
-Example (replace and commit):
-
-```bash
-cp ~/Downloads/vault-login.png assets/vault-login.png
-cp ~/Downloads/vault-dashboard.png assets/vault-dashboard.png
-cp ~/Downloads/vault-backend-role.png assets/vault-backend-role.png
-git add assets/vault-*.png && git commit -m "chore: add vault screenshots" && git push
-```
 ---
 
 ## 🛠️ Tech Stack
