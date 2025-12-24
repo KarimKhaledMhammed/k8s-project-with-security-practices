@@ -110,7 +110,51 @@ kubectl create secret tls myapp-tls-secret --key tls.key --cert tls.crt -n front
 Alternatively, paste your cert/key into `secure-app/values.yaml` under `secrets.tlsCrt` and `secrets.tlsKey` before installing the chart.
 
 ---
+## 🔐 Vault Integration
 
+This project can integrate with HashiCorp Vault for secret management and to provide short-lived credentials to your backend. The following snippets show a minimal workflow for enabling Kubernetes auth and creating a role/policy for the `backend` service account in `backend-ns`.
+
+1. Enable Kubernetes auth and configure the Kubernetes auth backend in Vault (example):
+
+```bash
+# On the Vault server: enable kubernetes auth
+vault auth enable kubernetes
+
+# Configure the Kubernetes auth method (use your cluster CA/token/service account)
+vault write auth/kubernetes/config \
+  token_reviewer_jwt="$TOKEN_REVIEWER_JWT" \
+  kubernetes_host="$KUBE_HOST" \
+  kubernetes_ca_cert=@/path/to/ca.crt
+```
+
+2. Create a policy that allows access to necessary secrets (example `backend-policy`):
+
+```hcl
+# backend-policy.hcl
+path "secret/data/backend/*" {
+  capabilities = ["read", "list"]
+}
+```
+
+```bash
+vault policy write backend-policy backend-policy.hcl
+```
+
+3. Create a role that maps a Kubernetes service account to the Vault policy:
+
+```bash
+vault write auth/kubernetes/role/backend-role \
+  bound_service_account_names=backend-sa \
+  bound_service_account_namespaces=backend-ns \
+  policies=backend-policy \
+  ttl=1h
+```
+
+4. From within Kubernetes, your backend pod (using `backend-sa`) can request a token from Vault and read secrets as allowed by `backend-policy`.
+
+See the screenshots below for example Vault UI pages (login, dashboard, backend-role).
+
+---
 ## 🧪 Testing & Validation
 
 1. Sign-up flow (end-to-end test):
@@ -133,16 +177,30 @@ kubectl exec -it $(kubectl get pod -l app=postgres -n data-ns -o name) -n data-n
 ---
 
 ## 🖼️ Screenshots
+**Cosign version:**
+![Cosign Version](/assets/cosign-version.svg)
 
 **Cosign verification (example):**
-![Cosign Version](/assets/cosign-version.png)
+![Cosign Version](/assets/cosign-version.svg)
 
-**Cosign verification (example):**
-![Cosign Version](/assets/cosign_verfication.png)
+**Frontend Login Page (example):**
+![App Login](/assets/app-login.svg)
 
-**Frontend Login Page (HTTPS)(example):**
-![App Login](/assets/https_page.png)
+**Vault (examples):**
+![Vault Login](/assets/vault-login.png)
+![Vault Dashboard](/assets/vault-dashboard.png)
+![Vault Backend Role](/assets/vault-backend-role.png)
 
+_Note: Replace the placeholder PNGs in `/assets/` with your real screenshots (PNG/JPG) if you prefer higher-fidelity images._
+
+Example (replace and commit):
+
+```bash
+cp ~/Downloads/vault-login.png assets/vault-login.png
+cp ~/Downloads/vault-dashboard.png assets/vault-dashboard.png
+cp ~/Downloads/vault-backend-role.png assets/vault-backend-role.png
+git add assets/vault-*.png && git commit -m "chore: add vault screenshots" && git push
+```
 ---
 
 ## 🛠️ Tech Stack

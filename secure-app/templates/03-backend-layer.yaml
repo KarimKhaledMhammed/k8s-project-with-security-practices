@@ -12,11 +12,23 @@ spec:
     metadata:
       labels:
         app: backend
+      # --- VAULT ANNOTATIONS START ---
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "backend-role"
+        vault.hashicorp.com/agent-inject-secret-config: "secret/data/backend/config"
+        # Use Helm string literals to escape the Vault curly braces
+        vault.hashicorp.com/agent-inject-template-config: |
+          {{ "{{" }}- with secret "secret/data/backend/config" -{{ "}}" }}
+          export DB_PASS="{{ "{{" }} .Data.data.db_pass {{ "}}" }}"
+          export REDIS_PASS="{{ "{{" }} .Data.data.redis_pass {{ "}}" }}"
+          {{ "{{" }}- end -{{ "}}" }}
     spec:
+      # Must match the bound_service_account_names in your Vault role
+      serviceAccountName: backend-sa
       imagePullSecrets:
       - name: {{ .Values.images.pullSecret | quote }}
-      
-      # 1. Init Containers updated to use the stable Headless DNS
+    
       initContainers:
       - name: wait-for-postgres
         image: alpine
@@ -25,14 +37,14 @@ spec:
         image: alpine
         command: ['sh', '-c', 'until nc -z {{ .Values.redis.host }} {{ .Values.redis.port }}; do echo waiting for redis; sleep 2; done;']
 
-      # 2. Main Application Container
       containers:
       - name: backend
         image: {{ .Values.images.backend }}
+        # Sourcing the Vault secrets before starting the application
+        command: ["/bin/sh", "-c", ". /vault/secrets/config && python app.py"]
         ports:
         - containerPort: 5000
         env:
-        # Hostnames from values.yaml (Headless DNS)
         - name: DB_HOST
           value: {{ .Values.database.host | quote }}
         - name: DB_PORT
@@ -41,18 +53,6 @@ spec:
           value: {{ .Values.redis.host | quote }}
         - name: REDIS_PORT
           value: {{ .Values.redis.port | quote }}
-        
-        # Credentials from Secrets
-        - name: DB_PASS
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: db-pass
-        - name: REDIS_PASS
-          valueFrom:
-            secretKeyRef:
-              name: app-secrets
-              key: redis-pass
 ---
 apiVersion: v1
 kind: Service

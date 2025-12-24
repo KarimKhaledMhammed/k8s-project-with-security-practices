@@ -1,0 +1,49 @@
+# Add the HashiCorp Helm repository
+helm repo add hashicorp https://helm.releases.hashicorp.com
+helm repo update
+
+# Create a namespace for Vault
+kubectl create namespace vault-ns
+
+# Install Vault in "Standalone" mode for development
+helm install vault hashicorp/vault \
+  --set "server.dev.enabled=true" \
+  --namespace vault-ns
+#Note: Using server.dev.enabled=true starts Vault in an "unsealed" state with an in-memory database. This is perfect for testing but not for production, as data is lost if the pod restarts.
+# wait for 2 to 5 min until the vault pod status turns into Runing
+# Vault comes with a web-based dashboard. To access it on your local machine:
+kubectl port-forward service/vault 8200:8200 -n vault-ns
+# Open your browser: Go to http://localhost:8200
+# Token: In dev mode, the root token is usually just root
+
+# Configuring Vault for your Kubernetes App:
+# Get into the Vault pod
+kubectl exec -it vault-0 -n vault-ns -- /bin/sh
+
+# Enable Kubernetes authentication
+vault auth enable kubernetes
+
+# Configure Vault to talk to the K8s API
+vault write auth/kubernetes/config \
+    kubernetes_host="https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT"
+
+
+# Write a secret
+vault kv put secret/backend/config db_pass="securepass123"
+
+# Create a policy to allow reading that secret
+vault policy write backend-policy - <<EOF
+path "secret/data/backend/config" {
+  capabilities = ["read"]
+}
+EOF
+
+# Bind the policy to your Backend's ServiceAccount
+vault write auth/kubernetes/role/backend-role \
+    bound_service_account_names=backend-sa \
+    bound_service_account_namespaces=backend-ns \
+    policies=backend-policy \
+    audience=vault
+    ttl=24h
+# Instead of using secrets.yaml in helm, you can now use the Vault Agent Sidecar. It "injects" the secret directly into the pod's file system as a volume.
+
